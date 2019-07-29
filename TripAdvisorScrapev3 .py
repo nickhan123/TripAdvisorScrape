@@ -28,9 +28,8 @@ options.add_argument("--test-type")
 Homepage = 'https://www.tripadvisor.com.my'
 
 user = UserAgent().random
-print(user)
+# print(user)
 headers = {'User-Agent': user}
-
 
 # import methods from previous version of code
 class Methods:
@@ -57,6 +56,7 @@ class Methods:
                   encoding='utf-8') as Linklist:
             reader = csv.reader(Linklist)
             for url in reader:
+                print(url)
                 if Methods.CheckNone(link) & Methods.CheckNone(url[3]):
                     if link == str(url[3]).replace('[', '').replace("'", '').replace(']', ''):
                         Linklist.close()
@@ -66,7 +66,7 @@ class Methods:
                     return False
             return True
 
-
+# unused
 def get_text_with_br(tag, result=''):
     for x in tag.contents:
         if isinstance(x, Tag):  # check if content is a tag
@@ -137,43 +137,29 @@ def collect_links(link, category, country, city, process_num):
             print("Limit search button not visible for url " + driver.current_url)
             pass
 
-        for div in driver.find_elements_by_class_name("attraction_clarity_cell"):
-            for b in div.find_elements_by_class_name('listing_title'):
-                if b.find_element_by_css_selector('a').get_attribute("href") is not None:
-                    activity_link = b.find_element_by_css_selector('a').get_attribute("href")
-                    if Methods.CheckNone(activity_link):
-                        if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
-                            with open(uniqueLinkList_path, 'at',
+        test_soup = BeautifulSoup(driver.page_source, 'lxml')
+
+        for link_test in test_soup.find_all('div', {'class': 'listing_title title_with_snippets'}):
+            for href in link_test.find_all('a'):
+                activity_link = Homepage + href.get('href')
+                print(activity_link)
+                if Methods.CheckNone(activity_link):
+                    if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
+                        print("trying to copy link")
+                        with open(uniqueLinkList_path, 'at',
                                       encoding='utf-8', newline='') as Linklist:
-                                writer = csv.writer(Linklist)
-                                u = (str(activity_link).split('\n'))
-                                total_link_info[0] = category
-                                total_link_info[1] = country
-                                total_link_info[2] = city
-                                total_link_info[3] = str(u).replace("[", "").replace("]", "").replace("'", "")
-                                writer.writerow(total_link_info)
-                            Linklist.close()
-                            key_url_list.append(activity_link)
-                            num += 1
-                else:
-                    c = b.find_element_by_css_selector('a').get_attribute("onclick")
-                    d = c.split(", ")[1]
-                    d = d.replace("'", "")
-                    activity_link = Ext + d
-                    if Methods.CheckNone(activity_link):
-                        if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
-                            with open(uniqueLinkList_path, 'at',
-                                      encoding='utf-8', newline='') as Linklist:
-                                writer = csv.writer(Linklist)
-                                u = (str(activity_link).split('\n'))
-                                total_link_info[0] = category
-                                total_link_info[1] = country
-                                total_link_info[2] = city
-                                total_link_info[3] = str(u).replace("[", "").replace("]", "").replace("'", "")
-                                writer.writerow(total_link_info)
-                            Linklist.close()
-                            key_url_list.append(activity_link)
-                            num += 1
+                            writer = csv.writer(Linklist)
+                            u = (str(activity_link).split('\n'))
+                            total_link_info[0] = category
+                            total_link_info[1] = country
+                            total_link_info[2] = city
+                            total_link_info[3] = str(u).replace("[", "").replace("]", "").replace("'", "")
+                            writer.writerow(total_link_info)
+                        Linklist.close()
+                        key_url_list.append(activity_link)
+                        num += 1
+
+
 
         # Click the 'X' button on the survey banner.
         # try:
