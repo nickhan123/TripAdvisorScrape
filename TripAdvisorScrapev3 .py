@@ -15,6 +15,10 @@ from phantomjs_bin import executable_path
 from unidecode import unidecode
 from selenium.common.exceptions import *
 
+# dynamic pathname based on different device, instead of hard coding the pathname
+uniqueLinkList_path = os.path.join(os.getcwd(), 'UniqueLinkList_.csv')
+extractedData_path = os.path.join(os.getcwd(), 'ExtractedData.csv')
+
 # Setup Chrome display
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
@@ -49,7 +53,7 @@ class Methods:
 
     # Check if link is Unique
     def Unique(link):
-        with open('E:/Scrape/TripAdvisor Australia/UniqueLinkList_.csv', 'rt',
+        with open(uniqueLinkList_path, 'rt',
                   encoding='utf-8') as Linklist:
             reader = csv.reader(Linklist)
             for url in reader:
@@ -88,7 +92,7 @@ def collect_links(link, category, country, city, process_num):
     options.add_argument(f'user-agent={user}')
     options.add_argument('--disable-gpu')
     options.add_argument('--headless')
-    driver = webdriver.Chrome(chrome_options=options, executable_path=r'E:\Scrape\chromedriver.exe')
+    driver = webdriver.Chrome(chrome_options=options, executable_path=r'C:\Scrape\chromedriver.exe')
     driver.get(str(link))  # This will open the page using the URL
     content = driver.page_source.encode('utf-8').strip()
     # driver_soup = BeautifulSoup(content, "html.parser")
@@ -139,7 +143,7 @@ def collect_links(link, category, country, city, process_num):
                     activity_link = b.find_element_by_css_selector('a').get_attribute("href")
                     if Methods.CheckNone(activity_link):
                         if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
-                            with open('E:/Scrape/TripAdvisor Australia/UniqueLinkList_.csv', 'at',
+                            with open(uniqueLinkList_path, 'at',
                                       encoding='utf-8', newline='') as Linklist:
                                 writer = csv.writer(Linklist)
                                 u = (str(activity_link).split('\n'))
@@ -158,7 +162,7 @@ def collect_links(link, category, country, city, process_num):
                     activity_link = Ext + d
                     if Methods.CheckNone(activity_link):
                         if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
-                            with open('E:/Scrape/TripAdvisor Australia/UniqueLinkList_.csv', 'at',
+                            with open(uniqueLinkList_path, 'at',
                                       encoding='utf-8', newline='') as Linklist:
                                 writer = csv.writer(Linklist)
                                 u = (str(activity_link).split('\n'))
@@ -224,7 +228,7 @@ def collect_links(link, category, country, city, process_num):
 
 def collect_data(category, country, city, attraction_list, process_num):
 
-    with open('E:/Scrape/TripAdvisor Australia/ExtractedData.csv', 'at', encoding="utf-8", newline='') as website:
+    with open(extractedData_path, 'at', encoding="utf-8", newline='') as website:
         writer = csv.writer(website)
 
         num_loop = 0
@@ -411,12 +415,12 @@ def main():
 
     start = timeit.default_timer()
 
-    with open('E:/Scrape/TripAdvisor Australia/UniqueLinkList_.csv', 'wt') as Linklist:
+    with open(uniqueLinkList_path, 'wt') as Linklist:
         Linklist.close()
 
     # activity_url_list = [], if global have to collect all url links for every city in the country
 
-    with open('E:/Scrape/TripAdvisor Australia/ExtractedData.csv', 'wt', encoding="utf-8", newline='') as website:
+    with open(extractedData_path, 'wt', encoding="utf-8", newline='') as website:
         writer = csv.writer(website)
         writer.writerow(['Name', 'Category', 'City', 'Country', 'Location', 'Overview', 'URL Link'])
 
@@ -484,7 +488,7 @@ def main():
                     break
 
     # Reading the Info from the UniquelinkList.csv file and placing the information into array lists for collect_data method.
-    with open('E:/Scrape/TripAdvisor Australia/UniqueLinkList_.csv', 'rt', encoding='utf-8', newline='') as activity_link:
+    with open(uniqueLinkList_path, 'rt', encoding='utf-8', newline='') as activity_link:
         reader = csv.reader(activity_link)
         counter = 0                                 # Count how many links from the file.
         attraction_url_list = []                    # Stores all URL links from file.
