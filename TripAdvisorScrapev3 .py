@@ -28,7 +28,6 @@ options.add_argument("--test-type")
 Homepage = 'https://www.tripadvisor.com.my'
 
 user = UserAgent().random
-# print(user)
 headers = {'User-Agent': user}
 
 # import methods from previous version of code
@@ -56,7 +55,7 @@ class Methods:
                   encoding='utf-8') as Linklist:
             reader = csv.reader(Linklist)
             for url in reader:
-                print(url)
+                # print(url)
                 if Methods.CheckNone(link) & Methods.CheckNone(url[3]):
                     if link == str(url[3]).replace('[', '').replace("'", '').replace(']', ''):
                         Linklist.close()
@@ -66,7 +65,6 @@ class Methods:
                     return False
             return True
 
-# unused
 def get_text_with_br(tag, result=''):
     for x in tag.contents:
         if isinstance(x, Tag):  # check if content is a tag
@@ -82,132 +80,94 @@ def get_text_with_br(tag, result=''):
 
 def collect_links(link, category, country, city, process_num):
 
-    # Only change the executable_path to your path. Leave the chrome_options. NOT NEEDED
-    # user = ua.random
-    # print(user)
-    # headers = {'User-Agent': user}
-    # options.add_argument('user-agent={user}')
-    # Only change the executable_path to your path. Leave the chrome_options.
+    with open(uniqueLinkList_path, 'at',encoding='utf-8', newline='') as Linklist:
+        writer = csv.writer(Linklist)
 
-    options.add_argument(f'user-agent={user}')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(chrome_options=options, executable_path=r'C:\Scrape\chromedriver.exe')
-    driver.get(str(link))  # This will open the page using the URL
-    content = driver.page_source.encode('utf-8').strip()
-    # driver_soup = BeautifulSoup(content, "html.parser")
+        options.add_argument(f'user-agent={user}')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--headless')
+        driver = webdriver.Chrome(chrome_options=options, executable_path=r'C:\Scrape\chromedriver.exe')
+        driver.get(str(link))  # This will open the page using the URL
+        content = driver.page_source.encode('utf-8').strip()
+        # driver_soup = BeautifulSoup(content, "html.parser")
 
-    page = requests.get(link, timeout=10, headers=headers)
-    soup = BeautifulSoup(page.text, "lxml")
+        page = requests.get(link, timeout=10, headers=headers)
+        soup = BeautifulSoup(page.text, "lxml")
 
-    # req = requests.get(str(link), headers=headers)
-    # reqsoup = BeautifulSoup(req.content, 'lxml')
+        # req = requests.get(str(link), headers=headers)
+        # reqsoup = BeautifulSoup(req.content, 'lxml')
 
-    key_url_list = []
-    total_link_info = ['', '', '', '']
-    # Get all the activity links
+        key_url_list = []
+        total_link_info = ['', '', '', '']
+        # Get all the activity links
 
-    num = 0
-    # we only want to click on the "limit search" once for smaller cities,
-    # clicking more than once will result in an endless loop in some pages
+        num = 0
+        # we only want to click on the "limit search" once for smaller cities,
+        #   clicking more than once will result in an endless loop in some pages
 
-    counter_limit_search = 0
+        counter_limit_search = 0
 
-    while True:
-        time.sleep(2)
-        try:
-            driver.find_element_by_class_name('ui_tab_bar').find_elements_by_css_selector('li')[1].click()
-            print("Locating ui_tab_bar for url " + driver.current_url)
-        except:
-            print("Error locating ui_tab_bar for url " + driver.current_url)
-            pass
+        while True:
+            time.sleep(2)
+            try:
+                driver.find_element_by_class_name('ui_tab_bar').find_elements_by_css_selector('li')[1].click()
+                print("Locating ui_tab_bar for url " + driver.current_url)
+            except:
+                print("Error locating ui_tab_bar for url " + driver.current_url)
+                pass
 
-        # check for the "Limit search to X" button
-        # note: this button appears when the city has few activities or the "outdoor activities" and "tours" page
-        try:
-            if counter_limit_search < 1:
-                driver.find_element_by_id("secondaryText").click()
-                print("Limiting search within " + 'city_of_country' + " for url " + driver.current_url)
-                # allow website to update itself
-                time.sleep(5)
-                counter_limit_search += 1
+            # check for the "Limit search to X" button
+            # note: this button appears when the city has few activities or the "outdoor activities" and "tours" page
+            try:
+                if counter_limit_search < 1:
+                    driver.find_element_by_id("secondaryText").click()
+                    print("Limiting search within " + 'city_of_country' + " for url " + driver.current_url)
+                    # allow website to update itself
+                    time.sleep(5)
+                    counter_limit_search += 1
 
-        # pass ElementNotVisibleException
-        except:
-            print("Limit search button not visible for url " + driver.current_url)
-            pass
+            # pass ElementNotVisibleException
+            except:
+                print("Limit search button not visible for url " + driver.current_url)
+                pass
 
-        test_soup = BeautifulSoup(driver.page_source, 'lxml')
+            test_soup = BeautifulSoup(driver.page_source, 'lxml')
 
-        for link_test in test_soup.find_all('div', {'class': 'listing_title title_with_snippets'}):
-            for href in link_test.find_all('a'):
-                activity_link = Homepage + href.get('href')
-                print(activity_link)
-                if Methods.CheckNone(activity_link):
-                    if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
-                        print("trying to copy link")
-                        with open(uniqueLinkList_path, 'at',
-                                      encoding='utf-8', newline='') as Linklist:
-                            writer = csv.writer(Linklist)
+            for link_test in test_soup.find_all('div', {'class': 'listing_title title_with_snippets'}):
+                for href in link_test.find_all('a'):
+                    activity_link = Homepage + href.get('href')
+                    if Methods.CheckNone(activity_link):
+                        if Methods.HttpCheck(activity_link) & Methods.Unique(activity_link):
                             u = (str(activity_link).split('\n'))
                             total_link_info[0] = category
                             total_link_info[1] = country
                             total_link_info[2] = city
                             total_link_info[3] = str(u).replace("[", "").replace("]", "").replace("'", "")
-                            writer.writerow(total_link_info)
-                        Linklist.close()
-                        key_url_list.append(activity_link)
-                        num += 1
-
-
-
-        # Click the 'X' button on the survey banner.
-        # try:
-        #     driver.find_element_by_class_name('sbx_align_right_wrapper').find_element_by_class_name('sbx_close').click()
-        #     # print("Closing the survey banner for url " + driver.current_url)
-        # except NoSuchElementException:
-        #     # print("No survey banner for url " + driver.current_url)
-        #     pass
-        #
-        # # Click on the 'X' button on the sign in banner.
-        # try:
-        #     driver.find_element_by_id('component_27').find_element_by_class_name(
-        #         'overlays-pieces-CloseX__close--7erra').click()
-        #     # print("Closing the sign in banner for url " + driver.current_url)
-        # except NoSuchElementException:
-        #     # print("No sign in banner for url " + driver.current_url)
-        #     pass
-
-        # Click on the 'Not right now, thanks' button.
-        # try:
-        #     if driver.find_element_by_class_name('QSISlider'):
-        #         container = driver.find_element_by_class_name('QSISlider')
-        #         for a in container.find_elements_by_css_selector('div'):
-        #             if 'position: absolute; top: 0px; left: 0px; width: 224px; height: 40px; overflow: hidden; display: block;' in a.get_attribute(
-        #                     'style'):
-        #                 a.click()
-        #                 # print("clicking on the not right now button for url " + driver.current_url)
-        # except (NoSuchElementException, StaleElementReferenceException, ElementNotVisibleException) as error:
-        #     # print("No not right now button for url " + driver.current_url)
-        #     pass
+                            time.sleep(1)
+                            if len(total_link_info) == 4:
+                                writer.writerow(total_link_info)
+                                time.sleep(1)
+                                key_url_list.append(activity_link)
+                                num += 1
 
         # Clicking on the Next Page
-        try:
-            if 'Next' in driver.find_element_by_class_name("disabled").text:
-                raise Exception
-            else:
-                currentlink = driver.current_url
-                driver.find_element_by_class_name("next").click()
-                time.sleep(5)
-                nextlink = driver.current_url
-                if currentlink == nextlink:
-                    driver.find_element_by_link_text("3").click()
-                    time.sleep(2)
-                    driver.find_element_by_class_name("previous").click()
-                    time.sleep(2)
-                continue
-        except:
-            break
+            try:
+                if 'Next' in driver.find_element_by_class_name("disabled").text:
+                    raise Exception
+                else:
+                    currentlink = driver.current_url
+                    driver.find_element_by_class_name("next").click()
+                    time.sleep(5)
+                    nextlink = driver.current_url
+                    if currentlink == nextlink:
+                        driver.find_element_by_link_text("3").click()
+                        time.sleep(2)
+                        driver.find_element_by_class_name("previous").click()
+                        time.sleep(2)
+                    continue
+            except:
+                break
+
 
     print("================================\nAll " + str(num) + " the links have been collected")
     print("Link collected: " + str(key_url_list))
@@ -361,9 +321,10 @@ def collect_data(category, country, city, attraction_list, process_num):
                 except:
                     continue
 
+                print(details)
                 writer.writerow(details)  # Writes data in csv file
                 # print('Adding item no.' + str(num_loop) + ' to list')
-                print(details)
+                # print(details)
                 num_loop += 1
                 time.sleep(3)
             # print("\n" + str(len(attraction_list)) + " in the queue of " + '' + city + '')
@@ -416,7 +377,7 @@ def main():
             dictionary = collect_category_link(city_link)
             activity_url_list = list(dictionary.values())   # within function, all collected activity links for the particular city
             category_list = list(dictionary.keys())
-            print(len(activity_url_list))
+            # print(len(activity_url_list))
 
             # Multiprocessing for Collect_links
 
@@ -535,10 +496,10 @@ def main():
                 process.remove(proc)  # Remove the finished process from the list
                 print("Process Ended!")
                 num_finish_process += 1
-                print('Completed Processes:')
+                print('Completed processes/links:')
                 print(num_finish_process)
                 remain_proc = int(all_process) - int(num_finish_process)
-                print('Remaining Processes:')
+                print('Remaining processes/links:')
                 print(remain_proc)
                 count_process -= 1
                 break
