@@ -1,19 +1,15 @@
-import requests
-from bs4 import BeautifulSoup, Tag
-import timeit
-import re
+import csv
 import multiprocessing
+import os
+import re
 import time
 import timeit
-import csv
-import os
-import xlsxwriter
-from multiprocessing import Pool
+
+import requests
+from bs4 import BeautifulSoup, Tag
 from fake_useragent import UserAgent
 from selenium import webdriver
-from phantomjs_bin import executable_path
 from unidecode import unidecode
-from selenium.common.exceptions import *
 
 # dynamic pathname based on different device, instead of hard coding the pathname
 uniqueLinkList_path = os.path.join(os.getcwd(), 'UniqueLinkList_.csv')
@@ -86,7 +82,7 @@ def collect_links(link, category, country, city, process_num):
         options.add_argument(f'user-agent={user}')
         options.add_argument('--disable-gpu')
         options.add_argument('--headless')
-        driver = webdriver.Chrome(chrome_options=options, executable_path=r'C:\Scrape\chromedriver.exe')
+        driver = webdriver.Chrome(chrome_options=options, executable_path=r'C:\Users\Nicholas\Documents\Summer intern @ Seeka\chromedriver.exe')
         driver.get(str(link))  # This will open the page using the URL
         content = driver.page_source.encode('utf-8').strip()
         # driver_soup = BeautifulSoup(content, "html.parser")
@@ -343,17 +339,23 @@ def parsing_script_input(line):
 # input: user provided TripAdvisor url
 # output: dictionary containing key = category type; value = category type url
 def collect_category_link(url):
+
     dictionary_category_link = {}
     page = requests.get(url, headers=headers)
     soup = BeautifulSoup(page.text, "lxml")
 
+    try :
     # look for the FIRST container - types of things to do; use "find" not "findall"; this also takes care of the occurence of the "see all" button
-    types_of_things_todo = soup.find(class_='attractions-attraction-overview-pills-PillShelf__pillShelf--3uaz2')
+        types_of_things_todo = soup.find(class_='attractions-attraction-overview-pills-PillShelf__pillShelf--3uaz2')
 
-    for link in types_of_things_todo.find_all('a', href=True):
-        key = re.sub(r" ?\([^)]+\)", "", link.text)
-        value = Homepage + link['href']
-        dictionary_category_link[key] = value
+        for link in types_of_things_todo.find_all('a', href=True):
+            key = re.sub(r" ?\([^)]+\)", "", link.text)
+            value = Homepage + link['href']
+            dictionary_category_link[key] = value
+    except:
+        print("Unsupported page format for " + url)
+        unsupported_links.append(url)
+        pass
 
     return dictionary_category_link
 
@@ -361,6 +363,9 @@ def collect_category_link(url):
 def main():
 
     start = timeit.default_timer()
+
+    global unsupported_links
+    unsupported_links = []
 
     with open(uniqueLinkList_path, 'wt') as Linklist:
         Linklist.close()
@@ -515,6 +520,7 @@ def main():
 
     time_run = str(format(time_hour, "02.0f")) + ':' + str(
         format((time_min - time_hour * 60), "02.0f") + ':' + str(format(time_sec - (time_min * 60), "^-05.1f")))
+    print ("These are all the unscrapped sites" + str(unsupported_links))
     print("This code has completed running in: " + time_run)
 
 if __name__ == '__main__':
