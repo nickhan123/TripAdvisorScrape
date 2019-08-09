@@ -77,8 +77,7 @@ def get_text_with_br(tag, result=''):
 def collect_links(link, category, country, city, process_num):
 
     with open(uniqueLinkList_path, 'at',encoding='utf-8', newline='') as Linklist:
-        writer = csv.writer(Linklist)
-
+        writer2 = csv.writer(Linklist)
         options.add_argument(f'user-agent={user}')
         options.add_argument('--disable-gpu')
         options.add_argument('--headless')
@@ -141,7 +140,7 @@ def collect_links(link, category, country, city, process_num):
                             total_link_info[3] = str(u).replace("[", "").replace("]", "").replace("'", "")
                             time.sleep(1)
                             if len(total_link_info) == 4:
-                                writer.writerow(total_link_info)
+                                writer2.writerow(total_link_info)
                                 time.sleep(1)
                                 key_url_list.append(activity_link)
                                 num += 1
@@ -176,8 +175,20 @@ def collect_data(category, country, city, attraction_list, process_num):
         num_loop = 0
         finished = 0
         retry_count = 0
+        response = requests.get(str(attraction_list), headers=headers, timeout=10)  # finds a response from the link to see if it's working
+        soup = BeautifulSoup(response.content, "lxml")
+
         while True:
             while finished != 1:
+
+                if soup.find_all("div", {'class': 'errHdr'}):
+                    print('Skipping...' + attraction_list + 'link is empty - error 404. ')
+                    break
+
+                elif soup.find_all('div', {'class': 'attractions-price-block-FromPriceBlock__mainPrice--2XwLZ'}):
+                    print('Skipping...' + attraction_list + '. Not an attraction. ')
+                    break
+
                 try:
                     if retry_count == 5:  # If except: No connection, up to 5 times then loop will break
                         print('This link cannot be opened ' + attraction_list)
@@ -186,7 +197,6 @@ def collect_data(category, country, city, attraction_list, process_num):
                     else:
                         time.sleep(1)  # buffer period
                         print('OPENING ' + attraction_list)
-                        response = requests.get(str(attraction_list), headers=headers, timeout=10)  # finds a response from the link to see if it's working
                         if response:
                             finished = 1
                 except requests.exceptions.ConnectionError as e:  # Multi Pool does not work without defining this
@@ -200,11 +210,6 @@ def collect_data(category, country, city, attraction_list, process_num):
                     retry_count += 1
                     continue
 
-            soup = BeautifulSoup(response.content, "lxml")
-
-            if soup.find_all('div', {'class': 'attractions-price-block-FromPriceBlock__mainPrice--2XwLZ'}):
-                print('Skipping...' + attraction_list + '. Not an attraction. ')
-                continue
             else:
                 details = ['', '', '', '', '', '', '']
                 # Name || from 3 layouts of TripAdvisor
@@ -375,6 +380,7 @@ def main():
     with open(extractedData_path, 'wt', encoding="utf-8", newline='') as website:
         writer = csv.writer(website)
         writer.writerow(['Name', 'Category', 'City', 'Country', 'Location', 'Overview', 'URL Link'])
+
 
     with open("scriptInput.txt", "rt") as input_lines:
         for index, line in enumerate(input_lines):
