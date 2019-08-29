@@ -1,2 +1,10 @@
-Australia,Waurn Ponds,https://www.tripadvisor.com.my/Attractions-g2671384-Activities-Waurn_Ponds_Victoria.html
-Australia,Gladstone,https://www.tripadvisor.com.my/Attractions-g255336-Activities-Gladstone_Queensland.html
+Australia,Brisbane,https://www.tripadvisor.com/Attractions-g255068-Activities-Brisbane_Brisbane_Region_Queensland.html
+Australia,Sydney,https://www.tripadvisor.com/Attractions-g255060-Activities-Sydney_New_South_Wales.html
+Australia,Melbourne,https://www.tripadvisor.com.my/Attractions-g255100-Activities-Melbourne_Victoria.html
+Australia,Canberra,https://www.tripadvisor.com.my/Attractions-g255057-Activities-Canberra_Australian_Capital_Territory.html
+Australia,Gold Coast,https://www.tripadvisor.com.my/Attractions-g255337-Activities-Gold_Coast_Queensland.html
+Australia,Mackay,https://www.tripadvisor.com.my/Attractions-g255338-Activities-Mackay_Queensland.html
+Australia,Rockhampton,https://www.tripadvisor.com.my/Attractions-g255071-Rockhampton_Queensland-Vacations.html
+Australia,Bundaberg,https://www.tripadvisor.com.my/Attractions-g255350-Activities-Geelong_City_of_Greater_Geelong_Victoria.html
+Australia,Darwin,https://www.tripadvisor.com.my/Attractions-g255066-Activities-Darwin_Top_End_Northern_Territory.html
+Australia,Adelaide,https://www.tripadvisor.com.my/Attractions-g255093-Activities-Adelaide_Greater_Adelaide_South_Australia.html
